@@ -4,43 +4,9 @@ import (
 	"fmt"
 	"github.com/gdamore/tcell"
 	"log"
+	"math/rand"
+	"time"
 )
-
-//var fish = "><_>"
-
-var bigFish = `
-o           //        +
- o        //////    ++
-  .    @))))))))))+++
-   .}:<<)))))))))))++
-       <<\\)))))) +++
-          \\   \\   ++
-                      +`
-
-var bigFish2 = `
-     |\    o
-    |  \    o
-|\ /    .\ o
-| |       (
-|/ \     /
-    |  /
-     |/
-`
-
-var smallFishSlice = []string{
-	"  _ ",
-	"><_>",
-}
-
-var fishForward = []string{
-	"     |\\    o",
-	"    |  \\    o",
-	"|\\ /    .\\ o",
-	"| |       (",
-	"|/ \\     /",
-	"    |  /",
-	"     |/",
-}
 
 func main() {
 	backgroundStyle := tcell.StyleDefault.Foreground(tcell.ColorRed).Background(tcell.ColorWhite)
@@ -62,84 +28,137 @@ func main() {
 		fmt.Println("err", err)
 	}
 
-	var start int
-
-	quit := func() {
+	finish := func() {
 		maybePanic := recover()
 		s.Fini()
 		if maybePanic != nil {
 			panic(maybePanic)
 		}
 	}
-	defer quit()
+	defer finish()
 
-	fish := fishForward
+	fishStyle := tcell.StyleDefault.Foreground(tcell.ColorBlue).Background(tcell.ColorWhite)
 
-	isForward := true
+	decorations := make([]*Decoration, 0)
+
+	decorations = append(decorations, NewDecoration(sea, 0, 5, s, fishStyle))
+
+	fishes := make([]*Fish, 0)
+
+	fishes = append(fishes, NewFish(whaleBackward, false, 100, 0, s, fishStyle))
+
+	fishes = append(fishes, NewFish(fishForward, true, 0, 7, s, fishStyle))
+	fishes = append(fishes, NewFish(fishForward, true, 5, 23, s, fishStyle))
+	fishes = append(fishes, NewFish(fishForward, true, 3, 37, s, fishStyle))
+
+	fishes = append(fishes, NewFish(fishBackward2, false, 100, 15, s, fishStyle))
+	fishes = append(fishes, NewFish(fishBackward2, false, 100, 30, s, fishStyle))
+
+	for _, fish := range fishes {
+		go func() {
+			for {
+				fish.Move()
+
+				time.Sleep(time.Duration(100+rand.Intn(500)) * time.Millisecond)
+			}
+		}()
+	}
+
+	for _, decoration := range decorations {
+		go func() {
+			for {
+				decoration.Draw()
+
+				time.Sleep(time.Duration(100+rand.Intn(1000)) * time.Millisecond)
+			}
+		}()
+	}
+
+	quit := make(chan struct{})
+
+	go func() {
+		for {
+			ev := s.PollEvent()
+
+			switch ev := ev.(type) {
+			case *tcell.EventKey:
+				if ev.Key() == tcell.KeyCtrlC {
+					quit <- struct{}{}
+				}
+			default:
+			}
+		}
+	}()
 
 	for {
 		s.Show()
 
-		ev := s.PollEvent()
-
-		switch ev := ev.(type) {
-		case *tcell.EventKey:
-			if ev.Key() == tcell.KeyCtrlC {
-				return
-			}
-			s.Clear()
-
-			drawFish(s, start, tcell.StyleDefault.Foreground(tcell.ColorBlue), fish)
-
-			if isForward {
-				start++
-			} else {
-				start--
-			}
-
-			if start == 50 {
-				isForward = false
-				fish = reverse(fish)
-			}
+		select {
+		case <-quit:
+			return
+		default:
 		}
 	}
 }
 
-func drawFish(s tcell.Screen, startX int, style tcell.Style, fish []string) {
-	for col := 0; col < len(fish); col++ {
-		for row := 0; row < len(fish[col]); row++ {
-			s.SetContent(startX+row, col, rune(fish[col][row]), nil, style)
+type Fish struct {
+	model       []string
+	x, y        int
+	style       tcell.Style
+	screen      tcell.Screen
+	swimForward bool
+}
+
+func NewFish(model []string, swimForward bool, x, y int, screen tcell.Screen, style tcell.Style) *Fish {
+	return &Fish{model: model, x: x, y: y, style: style, screen: screen, swimForward: swimForward}
+}
+
+func (f *Fish) Draw() {
+	for col := 0; col < len(f.model); col++ {
+		for row := 0; row < len(f.model[col]); row++ {
+			f.screen.SetContent(f.x+row, f.y+col, rune(f.model[col][row]), nil, f.style)
 		}
 	}
 }
 
-func reverse(fish []string) []string {
-	result := make([]string, 0, len(fish))
-	for _, str := range fish {
-		newStr := ""
-		for r := len(str) - 1; r >= 0; r-- {
-			newStr += string(str[r])
-		}
-		result = append(result, newStr)
+func (f *Fish) Move() {
+	f.Clear()
+
+	if f.swimForward {
+		f.x++
+	} else {
+		f.x--
 	}
 
-	return result
+	f.Draw()
+
 }
 
-func drawText(s tcell.Screen, x1, x2, y1, y2 int, style tcell.Style, text string) {
-	row := y1
-	col := x1
-	for _, ch := range text {
-		s.SetContent(col, row, ch, nil, style)
-		col++
+func (f *Fish) Clear() {
+	clearUnicode := ' '
 
-		if col >= x2 {
-			row++
-			col = x1
+	for col := 0; col < len(f.model); col++ {
+		for row := 0; row < len(f.model[col]); row++ {
+			f.screen.SetContent(f.x+row, f.y+col, clearUnicode, nil, f.style)
 		}
+	}
+}
 
-		if row > y2 {
-			break
+type Decoration struct {
+	model  []string
+	x, y   int
+	screen tcell.Screen
+	style  tcell.Style
+}
+
+func NewDecoration(model []string, x, y int, screen tcell.Screen, style tcell.Style) *Decoration {
+	return &Decoration{model: model, x: x, y: y, screen: screen, style: style}
+}
+
+func (d *Decoration) Draw() {
+	for col := 0; col < len(d.model); col++ {
+		for row := 0; row < len(d.model[col]); row++ {
+			d.screen.SetContent(d.x+row, d.y+col, rune(d.model[col][row]), nil, d.style)
 		}
 	}
 }
