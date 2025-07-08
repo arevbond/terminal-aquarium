@@ -1,7 +1,6 @@
 package main
 
 import (
-	"github.com/gdamore/tcell"
 	"log"
 	"log/slog"
 	"os"
@@ -21,25 +20,7 @@ func main() {
 	}
 	defer finish()
 
-	fishStyle := tcell.StyleDefault.Foreground(tcell.ColorBlue).Background(tcell.ColorWhite)
-
-	decorations := make([]*Decoration, 0)
-
-	decorations = append(decorations, NewDecoration(sea, 0, 5, app.screen, fishStyle))
-
-	initialFishes := app.generateFishes(fishStyle)
-
-	for _, fish := range initialFishes {
-		go func() {
-			go fish.Swim()
-			//<-fish.endSwim
-		}()
-	}
-
-	for _, decoration := range decorations {
-		decoration.Draw()
-
-	}
+	app.InitStartDecorationAndFishes()
 
 	if err := app.Run(); err != nil {
 		logger.Error("error while end app", slog.Any("error", err))

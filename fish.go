@@ -55,6 +55,11 @@ func NewFish(model []string, swimForward bool, speed Speed, x, y int, screen tce
 		endSwim:     make(chan struct{})}
 }
 
+// TOOD: добавить случайный раскрас рыбам
+func NewFishWithRandomColor() *Fish {
+	return nil
+}
+
 func (f *Fish) Draw() {
 	for col := 0; col < len(f.model); col++ {
 		for row := 0; row < len(f.model[col]); row++ {

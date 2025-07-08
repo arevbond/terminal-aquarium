@@ -36,6 +36,28 @@ func NewApp(log *slog.Logger) *App {
 	}
 }
 
+func (a *App) InitStartDecorationAndFishes() {
+	fishStyle := tcell.StyleDefault.Foreground(tcell.ColorBlue).Background(tcell.ColorWhite)
+
+	decorations := make([]*Decoration, 0)
+
+	decorations = append(decorations, NewDecoration(sea, 0, 5, a.screen, fishStyle))
+
+	initialFishes := a.generateFishes(fishStyle)
+
+	for _, fish := range initialFishes {
+		go func() {
+			go fish.Swim()
+			//<-fish.endSwim
+		}()
+	}
+
+	for _, decoration := range decorations {
+		decoration.Draw()
+
+	}
+}
+
 func (a *App) Run() error {
 	go a.HandleShutdown()
 
