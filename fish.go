@@ -7,17 +7,17 @@ import (
 	"time"
 )
 
-func generateFishes(s tcell.Screen, fishStyle tcell.Style, log *slog.Logger) []*Fish {
+func (a *App) generateFishes(fishStyle tcell.Style) []*Fish {
 	fishes := make([]*Fish, 0)
 
-	fishes = append(fishes, NewFish(whaleBackward, false, HighSpeed, 100, 0, s, fishStyle, log))
+	fishes = append(fishes, NewFish(whaleBackward, false, HighSpeed, 100, 0, a.screen, fishStyle, a.log))
 
-	fishes = append(fishes, NewFish(fishForward, true, MediumSpeed, rand.Intn(10), 7, s, fishStyle, log))
-	fishes = append(fishes, NewFish(fishForward2, true, MediumSpeed, rand.Intn(10), 23, s, fishStyle, log))
-	fishes = append(fishes, NewFish(fishForward, true, HighSpeed, rand.Intn(10), 37, s, fishStyle, log))
+	fishes = append(fishes, NewFish(fishForward, true, MediumSpeed, rand.Intn(10), 7, a.screen, fishStyle, a.log))
+	fishes = append(fishes, NewFish(fishForward2, true, MediumSpeed, rand.Intn(10), 23, a.screen, fishStyle, a.log))
+	fishes = append(fishes, NewFish(fishForward, true, HighSpeed, rand.Intn(10), 37, a.screen, fishStyle, a.log))
 
-	fishes = append(fishes, NewFish(fishBackward2, false, LowSpeed, 100+rand.Intn(10), 15, s, fishStyle, log))
-	fishes = append(fishes, NewFish(fishBackward, false, MediumSpeed, 100+rand.Intn(10), 30, s, fishStyle, log))
+	fishes = append(fishes, NewFish(fishBackward2, false, LowSpeed, 100+rand.Intn(10), 15, a.screen, fishStyle, a.log))
+	fishes = append(fishes, NewFish(fishBackward, false, MediumSpeed, 100+rand.Intn(10), 30, a.screen, fishStyle, a.log))
 
 	return fishes
 }
@@ -40,11 +40,19 @@ type Fish struct {
 	speed       Speed
 	logger      *slog.Logger
 	// TODO: добавить сигнал о том. что рыба достигла границы
-	//endSwim     chan struct{}
+	endSwim chan struct{}
 }
 
 func NewFish(model []string, swimForward bool, speed Speed, x, y int, screen tcell.Screen, style tcell.Style, logger *slog.Logger) *Fish {
-	return &Fish{model: model, curX: x, curY: y, speed: speed, style: style, screen: screen, swimForward: swimForward, logger: logger}
+	return &Fish{
+		model: model,
+		curX:  x, curY: y,
+		speed:       speed,
+		style:       style,
+		screen:      screen,
+		swimForward: swimForward,
+		logger:      logger,
+		endSwim:     make(chan struct{})}
 }
 
 func (f *Fish) Draw() {

@@ -1,5 +1,10 @@
 package main
 
+import (
+	"github.com/gdamore/tcell"
+	"log/slog"
+)
+
 var fishForward = []string{
 	"     |\\     ",
 	"    |  \\     ",
@@ -27,6 +32,12 @@ var whaleBackward = []string{
 	"  ,'        `.    \\  /",
 	"  |  O        \\___/  |",
 	//"~^~^~^~^~^~^~^~^~^~^~^~^~",
+}
+
+func NewWhale(speed Speed, screen tcell.Screen, logger *slog.Logger) *Fish {
+	style := tcell.StyleDefault.Foreground(tcell.ColorBlue).Background(tcell.ColorWhite)
+	x, _ := screen.Size()
+	return NewFish(whaleBackward, false, speed, x, 0, screen, style, logger)
 }
 
 var sea = []string{
