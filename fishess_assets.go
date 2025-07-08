@@ -1,9 +1,8 @@
 package main
 
-import (
-	"github.com/gdamore/tcell"
-	"log/slog"
-)
+import "github.com/gdamore/tcell"
+
+var fishColors = []tcell.Color{tcell.ColorBlue, tcell.ColorBlue, tcell.ColorRed, tcell.ColorOrange, tcell.ColorOrange}
 
 var fishForward = []string{
 	"     |\\     ",
@@ -34,15 +33,7 @@ var whaleBackward = []string{
 	//"~^~^~^~^~^~^~^~^~^~^~^~^~",
 }
 
-func NewWhale(speed Speed, screen tcell.Screen, logger *slog.Logger) *Fish {
-	style := tcell.StyleDefault.Foreground(tcell.ColorBlue).Background(tcell.ColorWhite)
-	x, _ := screen.Size()
-	return NewFish(whaleBackward, false, speed, x, 0, screen, style, logger)
-}
-
-var sea = []string{
-	"~^~^~^~^~^~^~^~^~^~^~^~^~^~^~^~^~^~^~^~^~^~^~^~^~^~^~^~^~^~^~^~^~^~^~^~^~^~^~^~^~^~^~^~^~^~^~^~^~^~^~^~^~^~^~^~^~^~^~^~^~^~^~^~^~^~^~^~^~^~^~^~^",
-}
+const sea = "~^"
 
 var wave = []string{
 	"   ,(   ,(   ,(   ,(   ,(   ,(   ,(   ,(",

@@ -10,14 +10,16 @@ import (
 func (a *App) generateFishes(fishStyle tcell.Style) []*Fish {
 	fishes := make([]*Fish, 0)
 
-	fishes = append(fishes, NewFish(whaleBackward, false, HighSpeed, 100, 0, a.screen, fishStyle, a.log))
+	//fishes = append(fishes, NewFish(whaleBackward, false, HighSpeed, 100, 0, a.screen, tcell.StyleDefault.Foreground(tcell.ColorBlue).Background(tcell.ColorWhite), a.log))
 
-	fishes = append(fishes, NewFish(fishForward, true, MediumSpeed, rand.Intn(10), 7, a.screen, fishStyle, a.log))
-	fishes = append(fishes, NewFish(fishForward2, true, MediumSpeed, rand.Intn(10), 23, a.screen, fishStyle, a.log))
-	fishes = append(fishes, NewFish(fishForward, true, HighSpeed, rand.Intn(10), 37, a.screen, fishStyle, a.log))
+	fishes = append(fishes, a.NewWhaleFish(Speed(2+rand.Intn(2))))
 
-	fishes = append(fishes, NewFish(fishBackward2, false, LowSpeed, 100+rand.Intn(10), 15, a.screen, fishStyle, a.log))
-	fishes = append(fishes, NewFish(fishBackward, false, MediumSpeed, 100+rand.Intn(10), 30, a.screen, fishStyle, a.log))
+	fishes = append(fishes, NewFishWithRandomColor(fishForward, true, MediumSpeed, rand.Intn(10), 7, a.screen, a.seaBackgroundColor, a.log))
+	fishes = append(fishes, NewFishWithRandomColor(fishForward2, true, MediumSpeed, rand.Intn(10), 23, a.screen, a.seaBackgroundColor, a.log))
+	fishes = append(fishes, NewFishWithRandomColor(fishForward, true, HighSpeed, rand.Intn(10), 37, a.screen, a.seaBackgroundColor, a.log))
+
+	fishes = append(fishes, NewFishWithRandomColor(fishBackward2, false, LowSpeed, 100+rand.Intn(10), 15, a.screen, a.seaBackgroundColor, a.log))
+	fishes = append(fishes, NewFishWithRandomColor(fishBackward, false, MediumSpeed, 100+rand.Intn(10), 30, a.screen, a.seaBackgroundColor, a.log))
 
 	return fishes
 }
@@ -55,9 +57,26 @@ func NewFish(model []string, swimForward bool, speed Speed, x, y int, screen tce
 		endSwim:     make(chan struct{})}
 }
 
-// TOOD: добавить случайный раскрас рыбам
-func NewFishWithRandomColor() *Fish {
-	return nil
+func (a *App) NewWhaleFish(speed Speed) *Fish {
+	colors := []tcell.Color{tcell.ColorBlue}
+	color := colors[rand.Intn(len(colors))]
+	return NewFish(whaleBackward, false, speed, a.width, 0, a.screen, tcell.StyleDefault.Foreground(color).Background(tcell.ColorWhite), a.log)
+}
+
+func NewFishWithRandomColor(model []string, swimForward bool, speed Speed, x, y int, screen tcell.Screen, background tcell.Color, logger *slog.Logger) *Fish {
+	color := fishColors[rand.Intn(len(fishColors))]
+
+	style := tcell.StyleDefault.Foreground(color).Background(background)
+
+	return &Fish{
+		model: model,
+		curX:  x, curY: y,
+		speed:       speed,
+		style:       style,
+		screen:      screen,
+		swimForward: swimForward,
+		logger:      logger,
+		endSwim:     make(chan struct{})}
 }
 
 func (f *Fish) Draw() {
