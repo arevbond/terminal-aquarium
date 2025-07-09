@@ -40,6 +40,7 @@ func (a *App) InitSeaWithResizeHandling() {
 		for {
 			if a.ScreenResized() {
 				a.DrawSea(a.width, 5)
+				a.SetSkyColor(tcell.ColorWhite)
 			}
 
 			time.Sleep(1 * time.Second)
