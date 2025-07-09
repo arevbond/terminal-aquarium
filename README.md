@@ -16,8 +16,3 @@ OR
 go build .
 ./terminal-aquarium
 ```
-
-## Screenshots
-![Scren 1](_assets/screen-1.png)
-
-![Scren 2](_assets/screen-2.png)
