@@ -3,6 +3,7 @@ package main
 import (
 	"github.com/gdamore/tcell"
 	"log/slog"
+	"time"
 )
 
 type App struct {
@@ -55,9 +56,7 @@ func (a *App) InitStartDecorationAndFishes() {
 	initialFishes := a.generateFishes(fishStyle)
 
 	for _, fish := range initialFishes {
-		go func() {
-			go fish.Swim()
-		}()
+		go fish.Swim()
 	}
 
 }
@@ -72,6 +71,7 @@ func (a *App) Run() error {
 		case <-a.quit:
 			return nil
 		default:
+			time.Sleep(16 * time.Millisecond)
 		}
 	}
 }

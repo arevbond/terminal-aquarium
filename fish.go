@@ -88,7 +88,7 @@ func (f *Fish) Draw() {
 }
 
 func (f *Fish) Move() {
-	f.Clear()
+	oldX := f.curX
 
 	if f.swimForward {
 		f.curX++
@@ -96,16 +96,20 @@ func (f *Fish) Move() {
 		f.curX--
 	}
 
+	f.ClearAt(oldX, f.curY)
 	f.Draw()
 }
 
 func (f *Fish) Swim() {
 	for {
 		f.Move()
-		x, _ := f.screen.Size()
-		if f.curX == x || f.curX == 0 {
-			f.logger.Info("fish has border", slog.Int("x", f.curX), slog.Int("y", f.curY))
-		}
+		//width, _ := f.screen.Size()
+		//if f.curX == width || f.curX == 0 {
+		//	f.endSwim <- struct{}{}
+		//	f.Clear()
+		//	f.logger.Info("fish end swim")
+		//	return
+		//}
 		f.SleepBySpeed()
 
 	}
@@ -120,6 +124,16 @@ func (f *Fish) SleepBySpeed() {
 	case HighSpeed:
 		time.Sleep(100 * time.Millisecond)
 	default:
+	}
+}
+
+func (f *Fish) ClearAt(x, y int) {
+	clearUnicode := ' '
+
+	for col := 0; col < len(f.model); col++ {
+		for row := 0; row < len(f.model[col]); row++ {
+			f.screen.SetContent(x+row, y+col, clearUnicode, nil, f.style)
+		}
 	}
 }
 
