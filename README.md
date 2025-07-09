@@ -16,5 +16,3 @@ OR
 go build .
 ./terminal-aquarium
 ```
-
-Press `Ctrl+C` or `q` to quit.
