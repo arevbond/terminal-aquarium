@@ -3,6 +3,7 @@ package main
 import (
 	"github.com/gdamore/tcell"
 	"log/slog"
+	"math/rand"
 	"time"
 )
 
@@ -51,9 +52,9 @@ func (a *App) InitStartDecorationAndFishes() {
 
 	a.InitSeaWithResizeHandling()
 
-	fishStyle := tcell.StyleDefault.Foreground(tcell.ColorBlue).Background(tcell.ColorWhite)
+	//initialFishes := a.generateFishes()
 
-	initialFishes := a.generateFishes(fishStyle)
+	initialFishes := a.generateRandomFish(15)
 
 	for _, fish := range initialFishes {
 		go fish.Swim()
@@ -61,8 +62,40 @@ func (a *App) InitStartDecorationAndFishes() {
 
 }
 
+func (a *App) InsertRandomFish() {
+	swimForward := rand.Intn(2) == 0
+
+	var model []string
+
+	if swimForward {
+		model = fishModelsForward[rand.Intn(len(fishModelsForward))]
+	} else {
+		model = fishModelsBackward[rand.Intn(len(fishModelsBackward))]
+	}
+
+	var x int
+	if swimForward {
+		x = 0 - len(model[0])
+	} else {
+		x = a.width + len(model[0])
+	}
+	y := 6 + rand.Intn(a.height-6)
+
+	fish := NewFishWithRandomColor(model, swimForward, Speed(rand.Intn(4)), x, y, a.screen, a.seaBackgroundColor, a.log)
+
+	go fish.Swim()
+}
+
 func (a *App) Run() error {
 	go a.HandleShutdown()
+
+	go func() {
+		for {
+			a.InsertRandomFish()
+
+			time.Sleep(3 * time.Second)
+		}
+	}()
 
 	for {
 		a.screen.Show()

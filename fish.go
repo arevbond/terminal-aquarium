@@ -7,19 +7,47 @@ import (
 	"time"
 )
 
-func (a *App) generateFishes(fishStyle tcell.Style) []*Fish {
+func (a *App) generateFishes() []*Fish {
 	fishes := make([]*Fish, 0)
 
 	//fishes = append(fishes, NewFish(whaleBackward, false, HighSpeed, 100, 0, a.screen, tcell.StyleDefault.Foreground(tcell.ColorBlue).Background(tcell.ColorWhite), a.log))
 
 	fishes = append(fishes, a.NewWhaleFish(Speed(2+rand.Intn(2))))
 
-	fishes = append(fishes, NewFishWithRandomColor(fishForward, true, MediumSpeed, rand.Intn(10), 7, a.screen, a.seaBackgroundColor, a.log))
+	fishes = append(fishes, NewFishWithRandomColor(fishForward3, true, MediumSpeed, rand.Intn(10), 7, a.screen, a.seaBackgroundColor, a.log))
 	fishes = append(fishes, NewFishWithRandomColor(fishForward2, true, MediumSpeed, rand.Intn(10), 23, a.screen, a.seaBackgroundColor, a.log))
 	fishes = append(fishes, NewFishWithRandomColor(fishForward, true, HighSpeed, rand.Intn(10), 37, a.screen, a.seaBackgroundColor, a.log))
 
-	fishes = append(fishes, NewFishWithRandomColor(fishBackward2, false, LowSpeed, 100+rand.Intn(10), 15, a.screen, a.seaBackgroundColor, a.log))
+	fishes = append(fishes, NewFishWithRandomColor(fishBackward2, false, LowSpeed, 100+rand.Intn(10), 10, a.screen, a.seaBackgroundColor, a.log))
 	fishes = append(fishes, NewFishWithRandomColor(fishBackward, false, MediumSpeed, 100+rand.Intn(10), 30, a.screen, a.seaBackgroundColor, a.log))
+
+	return fishes
+}
+
+func (a *App) generateRandomFish(n int) []*Fish {
+	fishes := make([]*Fish, 0, n)
+
+	//fishes = append(fishes, a.NewWhaleFish(Speed(2+rand.Intn(2))))
+	fishes = append(fishes, a.NewWhaleFish(HighSpeed))
+
+	for i := 0; i < n-1; i++ {
+		swimForward := rand.Intn(2) == 0
+
+		var model []string
+
+		if swimForward {
+			model = fishModelsForward[rand.Intn(len(fishModelsForward))]
+		} else {
+			model = fishModelsBackward[rand.Intn(len(fishModelsBackward))]
+		}
+
+		x := rand.Intn(a.width)
+		y := 6 + rand.Intn(a.height-6)
+
+		fish := NewFishWithRandomColor(model, swimForward, Speed(rand.Intn(4)), x, y, a.screen, a.seaBackgroundColor, a.log)
+
+		fishes = append(fishes, fish)
+	}
 
 	return fishes
 }
@@ -82,6 +110,9 @@ func NewFishWithRandomColor(model []string, swimForward bool, speed Speed, x, y 
 func (f *Fish) Draw() {
 	for col := 0; col < len(f.model); col++ {
 		for row := 0; row < len(f.model[col]); row++ {
+			if f.model[col][row] == ' ' {
+				continue
+			}
 			f.screen.SetContent(f.curX+row, f.curY+col, rune(f.model[col][row]), nil, f.style)
 		}
 	}
@@ -103,13 +134,13 @@ func (f *Fish) Move() {
 func (f *Fish) Swim() {
 	for {
 		f.Move()
-		//width, _ := f.screen.Size()
-		//if f.curX == width || f.curX == 0 {
-		//	f.endSwim <- struct{}{}
-		//	f.Clear()
-		//	f.logger.Info("fish end swim")
-		//	return
-		//}
+		width, _ := f.screen.Size()
+		if f.curX == width+20 || f.curX == -30 {
+			f.endSwim <- struct{}{}
+			f.Clear()
+			f.logger.Info("fish end swim")
+			return
+		}
 		f.SleepBySpeed()
 
 	}
@@ -118,11 +149,11 @@ func (f *Fish) Swim() {
 func (f *Fish) SleepBySpeed() {
 	switch f.speed {
 	case LowSpeed:
-		time.Sleep(800 * time.Millisecond)
+		time.Sleep(600 * time.Millisecond)
 	case MediumSpeed:
 		time.Sleep(400 * time.Millisecond)
 	case HighSpeed:
-		time.Sleep(100 * time.Millisecond)
+		time.Sleep(200 * time.Millisecond)
 	default:
 	}
 }
@@ -132,6 +163,10 @@ func (f *Fish) ClearAt(x, y int) {
 
 	for col := 0; col < len(f.model); col++ {
 		for row := 0; row < len(f.model[col]); row++ {
+			if f.model[col][row] == ' ' {
+				continue
+			}
+			
 			f.screen.SetContent(x+row, y+col, clearUnicode, nil, f.style)
 		}
 	}

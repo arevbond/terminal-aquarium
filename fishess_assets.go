@@ -2,7 +2,21 @@ package main
 
 import "github.com/gdamore/tcell"
 
-var fishColors = []tcell.Color{tcell.ColorBlue, tcell.ColorBlue, tcell.ColorRed, tcell.ColorOrange, tcell.ColorOrange}
+var fishColors = []tcell.Color{
+	tcell.ColorOrange,
+	//tcell.ColorYellow,
+	tcell.ColorRed,
+	//tcell.ColorPink,
+	//tcell.ColorWhite,
+	tcell.ColorGold,
+	tcell.ColorCoral,
+	tcell.ColorTomato,
+	tcell.ColorHotPink,
+	tcell.ColorLightSalmon,
+}
+
+var fishModelsForward = [][]string{fishForward, fishForward2, fishForward3}
+var fishModelsBackward = [][]string{fishBackward, fishBackward2}
 
 var fishForward = []string{
 	"     |\\     ",
@@ -54,4 +68,11 @@ var fishForward2 = []string{
 	" ) _o      -3",
 	" /.' `-.,---' ",
 	"       '",
+}
+
+var fishForward3 = []string{
+	"     .-\"\"L_",
+	";`, /   ( o\\ ",
+	"\\  ;    `, / ",
+	";_/\"`.__.-\"",
 }
