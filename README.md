@@ -2,7 +2,7 @@
 
 A animated aquarium for your terminal, written in Go using the [tcell library](https://github.com/gdamore/tcell).
 
-![Demo](demo.webm)
+![Demo](demo.gif)
 
 ## Installation
 
